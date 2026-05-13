@@ -1,0 +1,26 @@
+version: "3.9"
+services:
+  api:
+    build: .
+    ports: ["8002:8000"]
+    environment:
+      - ENV=development
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports: ["9092:9090"]
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:latest
+    ports: ["3002:3000"]
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  grafana_data:

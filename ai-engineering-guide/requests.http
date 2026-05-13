@@ -1,0 +1,174 @@
+# ============================================================
+# REST Client test file — open in VS Code + REST Client ext
+# Click "Send Request" above any ### block to run it
+# ============================================================
+
+# ─────────────────────────────────────────────────────────────
+# PROJECT 1: AI Chat API (port 8000)
+# ─────────────────────────────────────────────────────────────
+
+### Health check
+GET http://localhost:8000/health
+
+### Root
+GET http://localhost:8000/
+
+### Prometheus metrics
+GET http://localhost:8000/metrics
+
+### Basic chat
+POST http://localhost:8000/api/v1/chat
+Content-Type: application/json
+
+{
+  "message": "What is machine learning? Explain in 2 sentences.",
+  "temperature": 0.7
+}
+
+### Multi-turn conversation (use same conversation_id)
+POST http://localhost:8000/api/v1/chat
+Content-Type: application/json
+
+{
+  "message": "Can you give me a Python code example of that?",
+  "conversation_id": "my-test-convo-001",
+  "temperature": 0.5
+}
+
+### Follow-up in same conversation
+POST http://localhost:8000/api/v1/chat
+Content-Type: application/json
+
+{
+  "message": "How would I make that faster?",
+  "conversation_id": "my-test-convo-001"
+}
+
+### Streaming chat (observe token-by-token in response)
+POST http://localhost:8000/api/v1/chat/stream
+Content-Type: application/json
+
+{
+  "message": "Tell me the top 5 Python tips for beginners.",
+  "temperature": 0.8
+}
+
+### Get conversation history
+GET http://localhost:8000/api/v1/chat/my-test-convo-001/history
+
+### Get conversation metadata
+GET http://localhost:8000/api/v1/chat/my-test-convo-001
+
+### Clear conversation
+DELETE http://localhost:8000/api/v1/chat/my-test-convo-001
+
+
+# ─────────────────────────────────────────────────────────────
+# PROJECT 2: RAG Document Q&A (port 8001)
+# ─────────────────────────────────────────────────────────────
+
+### Health check
+GET http://localhost:8001/health
+
+### List documents
+GET http://localhost:8001/documents
+
+### Ask a question (before uploading — returns "no context" message)
+POST http://localhost:8001/ask
+Content-Type: application/json
+
+{
+  "question": "What are the main topics in the documents?",
+  "top_k": 5,
+  "min_similarity": 0.5
+}
+
+### Ask with lower similarity threshold
+POST http://localhost:8001/ask
+Content-Type: application/json
+
+{
+  "question": "Explain the key concepts",
+  "top_k": 3,
+  "min_similarity": 0.3,
+  "temperature": 0.1
+}
+
+
+# ─────────────────────────────────────────────────────────────
+# PROJECT 3: AI Agent System (port 8002)
+# ─────────────────────────────────────────────────────────────
+
+### Health check
+GET http://localhost:8002/health
+
+### List available tools
+GET http://localhost:8002/tools
+
+### Run agent — math + time
+POST http://localhost:8002/agent/run
+Content-Type: application/json
+
+{
+  "query": "What is 2 to the power of 32? And what is today's date?",
+  "max_steps": 5,
+  "temperature": 0.1
+}
+
+### Run agent — web search + calculation
+POST http://localhost:8002/agent/run
+Content-Type: application/json
+
+{
+  "query": "Search for what Python 3.12 improved, then calculate how many months ago 2023-10-02 was from today",
+  "max_steps": 8
+}
+
+### Run agent — Python code execution
+POST http://localhost:8002/agent/run
+Content-Type: application/json
+
+{
+  "query": "Write and run Python code to generate the first 10 Fibonacci numbers and sum them",
+  "max_steps": 5
+}
+
+### Test calculator tool directly
+POST http://localhost:8002/tools/calculator
+Content-Type: application/json
+
+{
+  "expression": "sqrt(144) * pi"
+}
+
+### Test Python runner directly
+POST http://localhost:8002/tools/run_python
+Content-Type: application/json
+
+{
+  "code": "nums = [i**2 for i in range(1, 11)]\nprint(f'Squares: {nums}')\nprint(f'Sum: {sum(nums)}')"
+}
+
+### Test time tool
+POST http://localhost:8002/tools/get_current_time
+Content-Type: application/json
+
+{}
+
+### Test web search
+POST http://localhost:8002/tools/web_search
+Content-Type: application/json
+
+{
+  "query": "FastAPI Python framework features",
+  "max_results": 3
+}
+
+### Test summarize tool
+POST http://localhost:8002/tools/summarize_text
+Content-Type: application/json
+
+{
+  "text": "Machine learning is a subset of artificial intelligence. It allows computers to learn from data without being explicitly programmed. There are three main types: supervised learning, unsupervised learning, and reinforcement learning. Supervised learning uses labeled data. Unsupervised learning finds patterns without labels. Reinforcement learning trains agents through rewards and penalties. Deep learning is a type of machine learning using neural networks with many layers. It excels at image recognition, natural language processing, and speech recognition.",
+  "max_sentences": 3
+}
